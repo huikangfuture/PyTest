@@ -1,5 +1,6 @@
 {
-    "python.linting.enabled": false,
     "python.autoComplete.addBrackets": false,
-    "python.pythonPath": "C:\\Apps\\Miniconda3\\envs\\pytorch\\python.exe"
+    "python.linting.enabled": false,
+    "python.pythonPath": "C:\\Apps\\Miniconda3\\envs\\pytorch\\python.exe",
+    "python.terminal.activateEnvironment": false
 }
