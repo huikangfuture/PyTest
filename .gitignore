@@ -1,5 +1,5 @@
 *.pth
 *.tar
 *.zip
-/__pycache__
-/checkpoints
+__pycache__/
+checkpoints/
