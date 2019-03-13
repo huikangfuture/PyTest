@@ -1,20 +1,8 @@
-import os
-import sys
-
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
 
-__all__ = ['AlexNet', 'alexnet']
-
-
-model_urls = {
-    'alexnet': 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth',
-}
-
-
 class AlexNet(nn.Module):
-
     def __init__(self, classes=1000):
         super(AlexNet, self).__init__()
         self.features = nn.Sequential(
@@ -46,14 +34,6 @@ class AlexNet(nn.Module):
     def forward(self, x):
         x = self.features(x)
         x = self.avgpool(x)
-        x = x.view(x.size(0), 256 * 6 * 6)
+        x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
-
-
-def alexnet(pretrained=False, **kwargs):
-    model = AlexNet(**kwargs)
-    if pretrained:
-        model_dir = os.path.dirname(os.path.abspath(__file__))
-        model.load_state_dict(model_zoo.load_url(model_urls['alexnet'], model_dir=model_dir))
-    return model

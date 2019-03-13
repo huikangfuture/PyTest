@@ -5,6 +5,9 @@ import torch
 import numpy as np
 
 
+__all__ = ['Progbar', 'Trainer']
+
+
 class Progbar:
     def __init__(self, steps, width=50):
         self.steps = steps
