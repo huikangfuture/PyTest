@@ -1,29 +1,28 @@
 import os
 import sys
 import glob
+import torch
 import warnings
 import functools
 
 
-__all__ = ['Config']
-
-
 class Config:
     def __init__(self, **kwargs):
-        self.device = 'cpu'
-        self.datasets = {
-            'mnist': os.path.join('C:/Users/Hui/.torch/datasets'),
-            'dogcat': os.path.join('D:/Workspace/Resources/dogs-vs-cats'),
-            'cifar10': os.path.join('C:/Users/Hui/.torch/datasets/cifar-10-batches-py')
+        self.data = {
+            'mnist': os.path.expanduser('~/.torch/datasets/MNIST/raw'),
+            'dogcat': os.path.expanduser('D:/Workspace/Resources/dogs-vs-cats'),
+            'cifar10': os.path.expanduser('~/.torch/datasets/cifar-10-batches-py')
         }
+
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.checkpoint = os.path.join(os.getcwd(), 'checkpoints')
 
         self.epochs = 10
         self.initial_epoch = 0
 
-        self.lr = 1e-5
+        self.lr = 1e-3
         self.step_lr = 10
-        self.batch_size = 64
+        self.batch_size = 32
 
         for k, v in kwargs.items():
             if hasattr(self, k):

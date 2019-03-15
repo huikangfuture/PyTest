@@ -13,16 +13,16 @@ import utils
 import models
 
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 transform = torchvision.transforms.Compose([
     torchvision.transforms.ToTensor()
 ])
 
-config = utils.Config(device=device)
-dataset = {x: data.CIFAR10(config.datasets['cifar10'], phase=x, transform=transform) for x in ['train', 'val']}
+config = utils.Config()
+dataset = {x: data.CIFAR10(config.data['cifar10'], phase=x, transform=transform) for x in ['train', 'val']}
 dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=config.batch_size, shuffle=True) for x in ['train', 'val']}
 
-model = models.vgg16(classes=10).to(device)
+model = models.VGG('D')
+model = model.to(config.device)
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.RMSprop(model.parameters(), lr=config.lr, momentum=0.9)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=config.step_lr, gamma=0.1)

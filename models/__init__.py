@@ -1,2 +1,2 @@
 from .alexnet import AlexNet
-from .vgg import *
+from .vgg import VGG

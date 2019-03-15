@@ -24,14 +24,14 @@ class CIFAR10(torch.utils.data.Dataset):
             labels.extend(entry['labels'])
         images = np.vstack(images).reshape(-1, 3, 32, 32).transpose((0, 2, 3, 1))
 
-        length = int(len(labels) * split)
+        segmnt = int(len(labels) * split)
 
         if phase == 'test':
             self.images, self.labels = images, labels
         elif phase == 'train':
-            self.images, self.labels = images[:length, ...], labels[:length]
+            self.images, self.labels = images[:segmnt], labels[:segmnt]
         else:
-            self.images, self.labels = images[length:, ...], labels[length:]
+            self.images, self.labels = images[segmnt:], labels[segmnt:]
 
     def __getitem__(self, index):
         image, label = self.images[index], self.labels[index]
