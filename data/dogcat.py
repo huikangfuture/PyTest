@@ -24,7 +24,7 @@ class DogCat(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         image = Image.open(self.images[index])
-        label = os.path.split(image)[1].split('.')[0]
+        label = os.path.split(self.images[index])[1].split('.')[0]
 
         if self.transform is not None:
             image = self.transform(image)

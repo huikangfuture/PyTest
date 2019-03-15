@@ -8,14 +8,14 @@ from copy import deepcopy
 
 
 class Progbar:
-    def __init__(self, steps, width=50):
-        self.steps = steps
+    def __init__(self, total, width=50):
+        self.total = total
         self.width = width
         self.since = time()
 
-    def update(self, step, prefix='', suffix='', end='\r'):
+    def update(self, index, prefix='', suffix='', end='\r'):
         interval = time() - self.since
-        progress = round(self.width * (step + 1) / self.steps)
+        progress = round(self.width * (index + 1) / self.total)
         progressbar = '[' + '>' * progress + '-' * (self.width - progress) + ']'
         print(prefix, progressbar, '{:.2f}s'.format(interval), suffix, sep=' - ', end=end, flush=True)
         self.since += interval
@@ -28,7 +28,7 @@ class Trainer:
         self.optimizer = optimizer
 
     def fit(self, dataloader, epochs=1, initial_epoch=0, device='cpu'):
-        best_acc = 0
+        best_corrects = 0
         for epoch in range(initial_epoch, epochs):
             print('Epoch: {}/{}'.format(epoch + 1, epochs))
 
@@ -40,38 +40,45 @@ class Trainer:
 
                 steps = len(loader)
                 progbar = Progbar(steps)
-                total_loss, total_acc = 0, 0
 
-                for step, (inputs, labels) in enumerate(loader):
-                    inputs, labels = inputs.to(device), labels.to(device)
+                batch_loss = []
+                batch_corrects = []
+
+                for i, (inputs, labels) in enumerate(loader):
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
 
                     self.optimizer.zero_grad()
 
                     with torch.set_grad_enabled(phase == 'train'):
                         outputs = self.model(inputs)
-                        _, pred = torch.max(outputs, 1)
+                        _, preds = torch.max(outputs, 1)
                         loss = self.criterion(outputs, labels)
 
                         if phase == 'train':
                             loss.backward()
                             self.optimizer.step()
 
-                    acc = torch.sum(pred == labels).item() / labels.size(0)
-                    total_loss, total_acc = total_loss + loss.item(), total_acc + acc
-                    batch_loss, batch_acc = total_loss / (step + 1), total_acc / (step + 1)
+                    batch_loss.append(loss.item())
+                    batch_corrects.append(torch.sum(preds == labels).item() / labels.size(0))
 
-                    prefix = '[{0:{2}d}/{1}]'.format(step + 1, steps, len(str(steps)))
-                    suffix = '{2}loss: {0:.4f} - {2}acc: {1:.4f}'.format(batch_loss, batch_acc, '' if phase  == 'train' else phase + '_')
-                    progbar.update(step, prefix, suffix, '\r' if (step + 1) < steps else '\n')
+                    prefix = '[{0:{2}d}/{1}]'.format(i + 1, steps, len(str(steps)))
+                    suffix = '{2}loss: {0:.4f} - {2}acc: {1:.4f}'.format(
+                        sum(batch_loss) / (i + 1),
+                        sum(batch_corrects) / (i + 1)
+                        '' if phase  == 'train' else phase + '_'
+                    )
+                    progbar.update(i, prefix, suffix, '\r' if (i + 1) < steps else '\n')
 
-                epoch_loss, epoch_acc = total_loss / steps, total_acc / steps
+                epoch_loss = sum(batch_loss) / steps
+                epoch_corrects = sum(batch_corrects) / steps
 
-                if 'val' not in loader or phase == 'val' and epoch_acc > best_acc:
-                    best_acc = epoch_acc
+                if 'val' not in loader or phase == 'val' and epoch_corrects > best_corrects:
+                    best_corrects = epoch_corrects
                     self.best_state = deepcopy({
                         'epoch': epoch + 1,
                         'model': self.model.state_dict(),
                         'optimizer': self.optimizer.state_dict()
                     })
 
-        print('Best accuracy is {:.2f}%'.format(best_acc * 100))
+        print('Best accuracy is {:.2f}%'.format(best_corrects * 100))
