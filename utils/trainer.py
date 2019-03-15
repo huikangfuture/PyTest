@@ -8,7 +8,7 @@ from copy import deepcopy
 
 
 class Progbar:
-    def __init__(self, total, width=50):
+    def __init__(self, total, width=30):
         self.total = total
         self.width = width
         self.since = time()
@@ -64,8 +64,8 @@ class Trainer:
 
                     prefix = '[{0:{2}d}/{1}]'.format(i + 1, steps, len(str(steps)))
                     suffix = '{2}loss: {0:.4f} - {2}acc: {1:.4f}'.format(
-                        sum(batch_loss) / (i + 1),
-                        sum(batch_corrects) / (i + 1)
+                        batch_loss[i],
+                        batch_corrects[i],
                         '' if phase  == 'train' else phase + '_'
                     )
                     progbar.update(i, prefix, suffix, '\r' if (i + 1) < steps else '\n')

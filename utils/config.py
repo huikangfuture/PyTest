@@ -20,9 +20,9 @@ class Config:
         self.epochs = 10
         self.initial_epoch = 0
 
-        self.lr = 1e-3
+        self.lr = 1e-4
         self.step_lr = 10
-        self.batch_size = 32
+        self.batch_size = 64
 
         for k, v in kwargs.items():
             if hasattr(self, k):
