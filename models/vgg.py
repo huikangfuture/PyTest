@@ -10,7 +10,7 @@ class VGG(nn.Module):
         'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M']
     }
 
-    def __init__(self, mode, classes=10, **kwargs):
+    def __init__(self, mode, classes=2, **kwargs):
         super(VGG, self).__init__()
         self.features = self.make_layers(VGG.config[mode], **kwargs)
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
@@ -31,15 +31,12 @@ class VGG(nn.Module):
         x = self.classifier(x)
         return x
 
-    def make_layers(self, cfg, max_pool=False, batch_norm=False):
+    def make_layers(self, cfg, batch_norm=False):
         layers = []
         in_channels = 3
         for v in cfg:
             if v == 'M':
-                if max_pool:
-                    layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
-                else:
-                    pass
+                layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
             else:
                 conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
                 if batch_norm:
