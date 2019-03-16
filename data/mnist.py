@@ -2,7 +2,6 @@ import os
 import sys
 import torch
 import numpy as np
-import torch.utils.data
 from PIL import Image
 
 
@@ -33,14 +32,3 @@ class MNIST(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.labels)
-
-
-if __name__ == '__main__':
-    sys.path.append(os.getcwd())
-    import utils
-
-    cfg = utils.Config()
-    mnist = MNIST(cfg.data['mnist'])
-
-    image, label = mnist[0]
-    print(image.shape, label, len(mnist))

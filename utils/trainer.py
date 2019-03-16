@@ -40,9 +40,7 @@ class Trainer:
 
                 steps = len(loader)
                 progbar = Progbar(steps)
-
-                batch_loss = []
-                batch_corrects = []
+                total_loss, total_corrects = 0, 0
 
                 for i, (inputs, labels) in enumerate(loader):
                     inputs = inputs.to(device)
@@ -59,21 +57,20 @@ class Trainer:
                             loss.backward()
                             self.optimizer.step()
 
-                    batch_loss.append(loss.item())
-                    batch_corrects.append(torch.sum(preds == labels).item() / labels.size(0))
+                    total_loss += loss.item()
+                    total_corrects += torch.sum(preds == labels).item() / labels.size(0)
+
+                    batch_loss = total_loss / (i + 1)
+                    batch_corrects = total_corrects / (i + 1)
 
                     prefix = '[{0:{2}d}/{1}]'.format(i + 1, steps, len(str(steps)))
-                    suffix = '{2}loss: {0:.4f} - {2}acc: {1:.4f}'.format(
-                        batch_loss[i],
-                        batch_corrects[i],
-                        '' if phase  == 'train' else phase + '_'
-                    )
+                    suffix = '{2}loss: {0:.4f} - {2}acc: {1:.4f}'.format(batch_loss, batch_corrects, '' if phase  == 'train' else phase + '_')
                     progbar.update(i, prefix, suffix, '\r' if (i + 1) < steps else '\n')
 
-                epoch_loss = sum(batch_loss) / steps
-                epoch_corrects = sum(batch_corrects) / steps
+                epoch_loss = total_loss / steps
+                epoch_corrects = total_corrects / steps
 
-                if 'val' not in loader or phase == 'val' and epoch_corrects > best_corrects:
+                if phase == 'val' and epoch_corrects > best_corrects:
                     best_corrects = epoch_corrects
                     self.best_state = deepcopy({
                         'epoch': epoch + 1,
@@ -81,4 +78,4 @@ class Trainer:
                         'optimizer': self.optimizer.state_dict()
                     })
 
-        print('Best accuracy is {:.2f}%'.format(best_corrects * 100))
+        print('Best val acc: {:.2f}%'.format(best_corrects * 100))

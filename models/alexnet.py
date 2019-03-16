@@ -3,7 +3,7 @@ import torch.utils.model_zoo as model_zoo
 
 
 class AlexNet(nn.Module):
-    def __init__(self, classes=10, **kwargs):
+    def __init__(self, classes=2):
         super(AlexNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
