@@ -22,7 +22,7 @@ class Config:
 
         self.lr = 1e-4
         self.step_lr = 10
-        self.batch_size = 64
+        self.batch_size = 32
 
         for k, v in kwargs.items():
             if hasattr(self, k):

@@ -24,7 +24,7 @@ class Bottleneck(nn.Module):
             nn.ReLU(inplace=True),
             conv3x3(channels, channels, stride),
             nn.BatchNorm2d(channels),
-            nn.ReLU(inplace=True)
+            nn.ReLU(inplace=True),
             conv1x1(channels, channels * self.expansion),
             nn.BatchNorm2d(channels * self.expansion)
         )

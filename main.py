@@ -29,10 +29,9 @@ transform = {
 
 config = utils.Config()
 dataset = {x: data.DogCat(config.data['dogcat'], phase=x, transform=transform[x]) for x in ['train', 'val']}
-dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=64, shuffle=True) for x in ['train', 'val']}
+dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=32, shuffle=True) for x in ['train', 'val']}
 
-model = models.VGG('A')
-# model = models.AlexNet()
+model = models.resnet50(classes=2)
 # model = tv.models.resnet18(pretrained=True)
 # model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
