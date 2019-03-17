@@ -1,2 +1,4 @@
-from .alexnet import AlexNet
-from .vgg import VGG
+from .vgg import *
+from .resnet import *
+from .alexnet import *
+from .densenet import *
