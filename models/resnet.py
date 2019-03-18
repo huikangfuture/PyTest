@@ -1,6 +1,5 @@
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-from collections import OrderedDict
 
 
 __all__ = ['resnet50', 'resnet101']
@@ -41,22 +40,29 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, classes=1000):
+    def __init__(self, block, layers, classes=1000, init_weights=True):
         super(ResNet, self).__init__()
         self.inputs = 64
-        self.features = nn.Sequential(OrderedDict([
-            ('conv1', nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)), # /2
-            ('norm1', nn.BatchNorm2d(64)),
-            ('relu1', nn.ReLU(inplace=True)),
-            ('pool1', nn.MaxPool2d(kernel_size=3, stride=2, padding=1)), # /2
-            ('conv2', self.make_layers(block, 64, layers[0], stride=1)),
-            ('conv3', self.make_layers(block, 128, layers[1], stride=2)), # /2
-            ('conv4', self.make_layers(block, 256, layers[2], stride=2)), # /2
-            ('conv5', self.make_layers(block, 512, layers[3], stride=2)), # /2
-            ('pool2', nn.AdaptiveAvgPool2d((1, 1)))
-        ]))
-
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False), # /2
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1), # /2
+            self.make_layers(block, 64, layers[0], stride=1),
+            self.make_layers(block, 128, layers[1], stride=2), # /2
+            self.make_layers(block, 256, layers[2], stride=2), # /2
+            self.make_layers(block, 512, layers[3], stride=2), # /2
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
         self.classifier = nn.Linear(512 * block.expansion, classes)
+
+        if init_weights:
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d):
+                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                elif isinstance(m, nn.BatchNorm2d):
+                    nn.init.constant_(m.weight, 1)
+                    nn.init.constant_(m.bias, 0)
 
     def make_layers(self, block, planes, blocks, stride=1):
         shortcut = None
