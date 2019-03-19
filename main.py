@@ -32,6 +32,7 @@ dataset = {x: data.DogCat(config.data['dogcat'], phase=x, transform=transform[x]
 dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=32, shuffle=True) for x in ['train', 'val']}
 
 model = models.resnet50(classes=2)
+# model = models.densenet121(classes=2)
 # model = tv.models.resnet18(pretrained=True)
 # model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
