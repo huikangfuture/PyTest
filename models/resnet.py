@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 
 
@@ -26,13 +27,13 @@ class Bottleneck(nn.Module):
         out = self.residual(x)
         x = x if self.shortcut is None else self.shortcut(x)
         out = out + x
-        out = nn.ReLU(inplace=True)(out)
+        out = F.relu(out, inplace=True)
 
         return out
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, classes=1000, init_weights=True):
+    def __init__(self, block, layers, classes=1000):
         super(ResNet, self).__init__()
         self.inplanes = 64
         self.features = nn.Sequential(
@@ -48,13 +49,12 @@ class ResNet(nn.Module):
         )
         self.classifier = nn.Linear(512 * block.expansion, classes)
 
-        if init_weights:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                elif isinstance(m, nn.BatchNorm2d):
-                    nn.init.constant_(m.weight, 1)
-                    nn.init.constant_(m.bias, 0)
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def make_layers(self, block, planes, blocks, stride=1):
         shortcut = None
