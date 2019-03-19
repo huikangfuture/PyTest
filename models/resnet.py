@@ -5,27 +5,19 @@ import torch.utils.model_zoo as model_zoo
 __all__ = ['resnet50', 'resnet101']
 
 
-def conv1x1(inputs, outputs, stride=1):
-    return nn.Conv2d(inputs, outputs, kernel_size=1, stride=stride, bias=False)
-
-
-def conv3x3(inputs, outputs, stride=1):
-    return nn.Conv2d(inputs, outputs, kernel_size=3, stride=stride, padding=1, bias=False)
-
-
 class Bottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inputs, planes, stride=1, shortcut=None):
+    def __init__(self, inplanes, planes, stride=1, shortcut=None):
         super(Bottleneck, self).__init__()
         self.residual = nn.Sequential(
-            conv1x1(inputs, planes),
+            nn.Conv2d(inplanes, planes, kernel_size=1, bias=False),
             nn.BatchNorm2d(planes),
             nn.ReLU(inplace=True),
-            conv3x3(planes, planes, stride),
+            nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False),
             nn.BatchNorm2d(planes),
             nn.ReLU(inplace=True),
-            conv1x1(planes, planes * self.expansion),
+            nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False),
             nn.BatchNorm2d(planes * self.expansion)
         )
         self.shortcut = shortcut
@@ -42,7 +34,7 @@ class Bottleneck(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, block, layers, classes=1000, init_weights=True):
         super(ResNet, self).__init__()
-        self.inputs = 64
+        self.inplanes = 64
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False), # /2
             nn.BatchNorm2d(64),
@@ -66,17 +58,17 @@ class ResNet(nn.Module):
 
     def make_layers(self, block, planes, blocks, stride=1):
         shortcut = None
-        if stride != 1 or self.inputs != planes * block.expansion:
+        if stride != 1 or self.inplanes != planes * block.expansion:
             shortcut = nn.Sequential(
-                conv1x1(self.inputs, planes * block.expansion, stride),
+                nn.Conv2d(self.inplanes, planes * block.expansion, kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(planes * block.expansion)
             )
 
         layers = []
-        layers.append(block(self.inputs, planes, stride, shortcut))
-        self.inputs = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.inputs, planes))
+        layers.append(block(self.inplanes, planes, stride, shortcut))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes))
 
         return nn.Sequential(*layers)
 
