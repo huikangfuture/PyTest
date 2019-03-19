@@ -18,7 +18,7 @@ class DenseLayer(nn.Sequential):
         self.add_module('conv2', nn.Conv2d(bn_size * growth_rate, growth_rate, kernel_size=3, padding=1, bias=False))
 
     def forward(self, x):
-        out = super(DenseLayer, self).features(x)
+        out = super(DenseLayer, self).forward(x)
         return torch.cat((x, out), 1) # size no change
 
 
