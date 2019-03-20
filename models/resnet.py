@@ -7,7 +7,7 @@ from collections import OrderedDict
 __all__ = ['resnet50', 'resnet101']
 
 
-class ResLayer(nn.Module):
+class ResLayer(nn.Sequential):
     expansion = 4
 
     def __init__(self, in_features, init_features, stride=1):
@@ -44,7 +44,7 @@ class ResBlock(nn.Sequential):
         super(ResBlock, self).__init__()
 
         for i in range(layers):
-            layer = ResLayer(in_features=in_features, init_features=init_features, stride=stride)
+            layer = ResLayer(in_features=in_features, init_features=init_features, stride=1 if i > 0 else stride)
             self.add_module('layer{}'.format(i + 1), layer)
             in_features = init_features * ResLayer.expansion
 
