@@ -83,11 +83,10 @@ class ResNet(nn.Module):
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.norm1 = nn.BatchNorm2d(64)
 
-        self.in_features = 64
-        self.layer1 = self.make_layers(block, 64,  layers[0])
-        self.layer2 = self.make_layers(block, 128, layers[1], stride=2)
-        self.layer3 = self.make_layers(block, 256, layers[2], stride=2)
-        self.layer4 = self.make_layers(block, 512, layers[3], stride=2)
+        self.layer1 = self.make_layers(block, 64, 64, layers[0])
+        self.layer2 = self.make_layers(block, 64  * block.expansion, 128, layers[1], stride=2)
+        self.layer3 = self.make_layers(block, 128 * block.expansion, 256, layers[2], stride=2)
+        self.layer4 = self.make_layers(block, 256 * block.expansion, 512, layers[3], stride=2)
 
         self.fc = nn.Linear(512 * block.expansion, classes)
 
@@ -98,19 +97,18 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def make_layers(self, block, init_features, blocks, stride=1):
+    def make_layers(self, block, in_features, init_features, blocks, stride=1):
         shortcut = None
-        if stride != 1 or self.in_features != init_features * block.expansion:
+        if stride != 1 or in_features != init_features * block.expansion:
             shortcut = nn.Sequential(
-                conv1x1(self.in_features, init_features * block.expansion, stride),
+                conv1x1(in_features, init_features * block.expansion, stride),
                 nn.BatchNorm2d(init_features * block.expansion)
             )
 
         layers = []
-        layers.append(block(self.in_features, init_features, stride, shortcut))
-        self.in_features = init_features * block.expansion
+        layers.append(block(in_features, init_features, stride, shortcut))
         for i in range(1, blocks):
-            layers.append(block(self.in_features, init_features))
+            layers.append(block(init_features * block.expansion, init_features))
 
         return nn.Sequential(*layers)
 
