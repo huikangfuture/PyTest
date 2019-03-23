@@ -20,7 +20,6 @@ class BasicBlock(nn.Module):
 
     def __init__(self, in_features, init_features, stride=1, shortcut=None):
         super(BasicBlock, self).__init__()
-        # Both self.conv1 and self.shortcut layers downsample the input when stride != 1
         self.conv1 = conv3x3(in_features, init_features, stride)
         self.norm1 = nn.BatchNorm2d(init_features)
         self.conv2 = conv3x3(init_features, init_features)
@@ -47,7 +46,6 @@ class Bottleneck(nn.Module):
 
     def __init__(self, in_features, init_features, stride=1, shortcut=None):
         super(Bottleneck, self).__init__()
-        # Both self.conv2 and self.shortcut layers downsample the input when stride != 1
         self.conv1 = conv1x1(in_features, init_features)
         self.norm1 = nn.BatchNorm2d(init_features)
         self.conv2 = conv3x3(init_features, init_features, stride)
@@ -76,17 +74,16 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-
     def __init__(self, block, layers, classes=1000):
         super(ResNet, self).__init__()
-
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.norm1 = nn.BatchNorm2d(64)
 
-        self.layer1 = self.make_layers(block, 64, 64, layers[0])
-        self.layer2 = self.make_layers(block, 64  * block.expansion, 128, layers[1], stride=2)
-        self.layer3 = self.make_layers(block, 128 * block.expansion, 256, layers[2], stride=2)
-        self.layer4 = self.make_layers(block, 256 * block.expansion, 512, layers[3], stride=2)
+        self.planes = 64
+        self.layer1 = self.make_layers(block, 64,  layers[0])
+        self.layer2 = self.make_layers(block, 128, layers[1], stride=2)
+        self.layer3 = self.make_layers(block, 256, layers[2], stride=2)
+        self.layer4 = self.make_layers(block, 512, layers[3], stride=2)
 
         self.fc = nn.Linear(512 * block.expansion, classes)
 
@@ -97,18 +94,19 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def make_layers(self, block, in_features, init_features, blocks, stride=1):
+    def make_layers(self, block, init_features, blocks, stride=1):
         shortcut = None
-        if stride != 1 or in_features != init_features * block.expansion:
+        if stride != 1 or self.planes != init_features * block.expansion:
             shortcut = nn.Sequential(
-                conv1x1(in_features, init_features * block.expansion, stride),
+                conv1x1(self.planes, init_features * block.expansion, stride),
                 nn.BatchNorm2d(init_features * block.expansion)
             )
 
         layers = []
-        layers.append(block(in_features, init_features, stride, shortcut))
+        layers.append(block(self.planes, init_features, stride, shortcut))
+        self.planes = init_features * block.expansion
         for i in range(1, blocks):
-            layers.append(block(init_features * block.expansion, init_features))
+            layers.append(block(self.planes, init_features))
 
         return nn.Sequential(*layers)
 
@@ -130,25 +128,25 @@ class ResNet(nn.Module):
 
 
 def resnet18(**kwargs):
-    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
+    model = ResNet(BasicBlock, (2, 2, 2, 2), **kwargs)
     return model
 
 
 def resnet34(**kwargs):
-    model = ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
+    model = ResNet(BasicBlock, (3, 4, 6, 3), **kwargs)
     return model
 
 
 def resnet50(**kwargs):
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    model = ResNet(Bottleneck, (3, 4, 6, 3), **kwargs)
     return model
 
 
 def resnet101(**kwargs):
-    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
+    model = ResNet(Bottleneck, (3, 4, 23, 3), **kwargs)
     return model
 
 
 def resnet152(**kwargs):
-    model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
+    model = ResNet(Bottleneck, (3, 8, 36, 3), **kwargs)
     return model
