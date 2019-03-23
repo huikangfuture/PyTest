@@ -22,10 +22,11 @@ class Progbar:
 
 
 class Trainer:
-    def __init__(self, model, criterion, optimizer):
+    def __init__(self, model, criterion, optimizer, scheduler=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
+        self.scheduler = scheduler
 
     def fit(self, dataloader, epochs=1, initial_epoch=0, device='cpu'):
         best_corrects = 0
@@ -69,6 +70,9 @@ class Trainer:
 
                 epoch_loss = total_loss / steps
                 epoch_corrects = total_corrects / steps
+
+                if phase == 'val' and self.scheduler is not None:
+                    self.scheduler.step(epoch_loss)
 
                 if phase == 'val' and epoch_corrects > best_corrects:
                     best_corrects = epoch_corrects

@@ -31,14 +31,16 @@ config = utils.Config()
 dataset = {x: data.DogCat(config.data['dogcat'], phase=x, transform=transform[x]) for x in ['train', 'val']}
 dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=32, shuffle=True) for x in ['train', 'val']}
 
-model = models.resnet50(classes=2)
-# model = models.densenet121(classes=2)
-# model = tv.models.resnet18(pretrained=True)
-# model.fc = torch.nn.Linear(model.fc.in_features, 2)
+model = tv.models.densenet121(pretrained=True)
+model.classifier = torch.nn.Linear(model.classifier.in_features, 2)
 
 model = model.to(config.device)
 criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-4, momentum=0.9)
+optimizer = torch.optim.RMSprop([
+    {'params': model.features.parameters()},
+    {'params': model.classifier.parameters(), 'lr': 1e-3, 'momentum': 0.9}
+], lr=0, momentum=0)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
-trainer = utils.Trainer(model, criterion, optimizer)
-trainer.fit(dataloader, epochs=10, device=config.device)
+trainer = utils.Trainer(model, criterion, optimizer, scheduler)
+trainer.fit(dataloader, epochs=100, initial_epoch=0, device=config.device)
