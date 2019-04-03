@@ -29,7 +29,7 @@ transform = {
 
 config = utils.Config()
 dataset = {x: data.DogCat(config.data['dogcat'], phase=x, transform=transform[x]) for x in ['train', 'val']}
-dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=32, shuffle=True) for x in ['train', 'val']}
+dataloader = {x: torch.utils.data.DataLoader(dataset[x], batch_size=16, shuffle=True) for x in ['train', 'val']}
 
 model = tv.models.densenet121(pretrained=True)
 model.classifier = torch.nn.Linear(model.classifier.in_features, 2)

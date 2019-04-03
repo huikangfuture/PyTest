@@ -10,7 +10,7 @@ class Config:
     def __init__(self, **kwargs):
         self.data = {
             'mnist': os.path.expanduser('~/.torch/datasets/MNIST/processed'),
-            'dogcat': os.path.expanduser('D:/Workspace/Resources/dogs-vs-cats'),
+            'dogcat': os.path.expanduser('~/.torch/datasets/dogs-vs-cats'),
             'cifar10': os.path.expanduser('~/.torch/datasets/cifar-10-batches-py')
         }
 

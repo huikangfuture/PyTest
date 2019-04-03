@@ -3,22 +3,8 @@ import sys
 import torch
 import numpy as np
 
-from time import time
+from tqdm import trange
 from copy import deepcopy
-
-
-class Progbar:
-    def __init__(self, total, width=30):
-        self.total = total
-        self.width = width
-        self.since = time()
-
-    def update(self, index, prefix='', suffix='', end='\r'):
-        interval = time() - self.since
-        progress = round(self.width * (index + 1) / self.total)
-        progressbar = '[' + '>' * progress + '-' * (self.width - progress) + ']'
-        print(prefix, progressbar, '{:.2f}s'.format(interval), suffix, sep=' - ', end=end, flush=True)
-        self.since += interval
 
 
 class Trainer:
@@ -40,7 +26,7 @@ class Trainer:
                     self.model.eval()
 
                 steps = len(loader)
-                progbar = Progbar(steps)
+                progbar = trange(steps, ncols=100, ascii=True)
                 total_loss, total_corrects = 0, 0
 
                 for i, (inputs, labels) in enumerate(loader):
@@ -64,9 +50,10 @@ class Trainer:
                     batch_loss = total_loss / (i + 1)
                     batch_corrects = total_corrects / (i + 1)
 
-                    prefix = '[{0:{2}d}/{1}]'.format(i + 1, steps, len(str(steps)))
-                    suffix = '{2}loss: {0:.4f} - {2}acc: {1:.4f}'.format(batch_loss, batch_corrects, '' if phase  == 'train' else phase + '_')
-                    progbar.update(i, prefix, suffix, '\r' if (i + 1) < steps else '\n')
+                    progbar.set_postfix_str('loss: {:.4f}, acc: {:.4f}'.format(batch_loss, batch_corrects))
+                    progbar.update()
+
+                progbar.close()
 
                 epoch_loss = total_loss / steps
                 epoch_corrects = total_corrects / steps
