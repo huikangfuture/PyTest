@@ -14,6 +14,17 @@ XDG_PICTURES_DIR="$HOME/Pictures"
 XDG_VIDEOS_DIR="$HOME/Videos"
 ```
 ```py
+sudo nano /etc/default/locale
+LANG="en_US.UTF-8"
+LANGUAGE="en_US:en"
+sudo locale-gen
+
+sudo nano /etc/default/locale
+LANG="zh_CN.UTF-8"
+LANGUAGE="zh_CN:zh"
+sudo locale-gen
+```
+```py
 # --------------------------------------------------------------------------------- #
 pip list -o --format=columns
 pip install --ignore-installed --upgrade tensorflow
